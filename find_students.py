@@ -4,8 +4,8 @@ import csv
 from subprocess import STDOUT, check_output
 import ntpath
 
-folder = 'Assignment 1_e_/'
-custom_input = b"0 4.0 3 0 1 3\n"
+folder = 'Assignment 6a/'
+custom_inputs = [b"10\n", b"2.66\n"]
 # _required_files = ['encode.txt', 'log.txt', 'decode.txt']
 _required_files = []
 required_files = [os.path.join(folder, f) for f in _required_files]
@@ -37,9 +37,10 @@ for i, fx in enumerate(flist):
 			os.system(f'rm "{folder}{fx}"')
 
 		if matched:
-			new_folder = f'"{folder}{roll}/"'.upper()
+			new_folder = f'"{folder}{roll.upper()}/"'
 			old_path = f'"{folder}{fx}"'
 			mkdir_cmd = f'mkdir -p {new_folder}'
+			print(mkdir_cmd)
 			mv_cmd = f'mv {old_path} "{folder}{roll.upper()}/{roll.upper() + rest_fname}"'
 			#exe_path = f'\"{folder}{fx}\"'
 
@@ -52,8 +53,8 @@ for i, fx in enumerate(flist):
 			for eff in required_files:
 				os.system(f'cp {eff} \"{folder}{roll.upper()}\"')
 
-	print(f"Count {i}", end='\r')		
-
+	print(f"Count {i}", end='\r')
+	
 ## Compile and execute
 flist = os.listdir(folder)
 # flist = list(map(lambda x: re.sub('[()]', '', x), pat_rolls.split('|')))
@@ -83,7 +84,7 @@ def dict_to_csv(D, fname):
 f_devnull = open(os.devnull,"w")
 f_md = open(f'{folder.replace("/", "")}.md'.replace(" ", ""), "w")
 f_md.write("## INPUT \n")
-f_md.write(f"`{custom_input.decode(u'utf-8')}`\n")
+f_md.write(f"`{[custom_input.decode(u'utf-8') for custom_input in custom_inputs]}`\n")
 marks_all = []
 for fx in flist:
 	print()
@@ -122,17 +123,19 @@ for fx in flist:
 				print('SUCCESS')
 				f_md.write(f"\n> **Compilation Status**: SUCCESS\n\n")
 
-				p = subprocess.run([f'./{l_exe_path}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=custom_input)
-				if p.returncode == 0:
-					output = p.stdout.decode(u'utf-8')
-					print("\nOUTPUT:")
-					print(output)
-					f_md.write(f"OUTPUT\n---\n```\n{output}\n```\n")
-				else:
-					print("\nERROR:")
-					err = p.stderr.decode(u'utf-8')
-					print(err)
-					f_md.write(f"ERROR\n---\n```\n{err}\n```\n")
+				f_md.write(f"OUTPUT\n---\n")
+				for custom_input in custom_inputs:
+					p = subprocess.run([f'./{l_exe_path}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=custom_input)
+					if p.returncode == 0:
+						output = p.stdout.decode(u'utf-8')
+						print("\nOUTPUT:")
+						print(output)
+						f_md.write(f"```\n{output}\n```\n")
+					else:
+						print("\nERROR:")
+						err = p.stderr.decode(u'utf-8')
+						print(err)
+						f_md.write(f"ERROR\n---\n```\n{err}\n```\n")
 
 			with open(src_path) as src_code:
 				f_md.write(f"> **SRC:** {src_path}\n")
